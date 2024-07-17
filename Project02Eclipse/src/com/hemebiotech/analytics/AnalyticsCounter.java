@@ -1,43 +1,37 @@
 package com.hemebiotech.analytics;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 public class AnalyticsCounter {
-	private static int headacheCount = 0;	
-	private static int rashCount = 0;		
-	private static int pupilCount = 0;		
-	
-	public static void main(String args[]) throws Exception {
-		// first get input
-		BufferedReader reader = new BufferedReader (new FileReader("symptoms.txt"));
-		String line = reader.readLine();
 
-		int i = 0;	
-		int headCount = 0;	// counts headaches
-		while (line != null) {
-			i++;	
-			System.out.println("symptom from file: " + line);
-			if (line.equals("headache")) {
-				headCount++;
-				System.out.println("number of headaches: " + headCount);
-			}
-			else if (line.equals("rush")) {
-				rashCount++;
-			}
-			else if (line.contains("pupils")) {
-				pupilCount++;
-			}
+    public static void main(String[] args) {
+        // Chemin du fichier symptoms.txt
+        String filepath = "symptoms.txt";
+        
+        // Instance de ReadSymptomDataFromFile pour lire les symptômes
+        ISymptomReader reader = new ReadSymptomDataFromFile(filepath);
 
-			line = reader.readLine();	// get another symptom
-		}
-		
-		// next generate output
-		FileWriter writer = new FileWriter ("result.out");
-		writer.write("headache: " + headacheCount + "\n");
-		writer.write("rash: " + rashCount + "\n");
-		writer.write("dialated pupils: " + pupilCount + "\n");
-		writer.close();
-	}
+        // Lire les symptômes depuis le fichier
+        List<String> symptoms = reader.GetSymptoms();
+
+        // Utilisation Map pour compter les occurrences de chaque symptôme
+        Map<String, Integer> symptomCounts = new TreeMap<>();
+
+        for (String symptom : symptoms) {
+            symptomCounts.put(symptom, symptomCounts.getOrDefault(symptom, 0) + 1);
+        }
+
+        // Écrire les résultats dans un fichier
+        try (FileWriter writer = new FileWriter("result.out")) {
+            for (Map.Entry<String, Integer> entry : symptomCounts.entrySet()) {
+                writer.write(entry.getKey() + ": " + entry.getValue() + "\n");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }
